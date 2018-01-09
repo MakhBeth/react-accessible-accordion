@@ -2,7 +2,9 @@
 
 import React, { Component } from 'react';
 import type { Node } from 'react';
+import PropTypes from 'prop-types';
 import { isArraysEqualShallow } from '../utils';
+
 
 type AccordionProps = {
     accordion: boolean,
@@ -16,6 +18,8 @@ type AccordionState = {
     activeItems: Array<string | number>,
 };
 
+const ACCORDION_CONTEXT = '__ACCORDION__';
+
 class Accordion extends Component<AccordionProps, AccordionState> {
     static defaultProps = {
         accordion: true,
@@ -27,6 +31,22 @@ class Accordion extends Component<AccordionProps, AccordionState> {
     state = {
         activeItems: this.preExpandedItems(),
         accordion: true,
+    };
+
+    static childContextTypes = {
+        [ACCORDION_CONTEXT]: PropTypes.object.isRequired
+    };
+
+    getChildContext() {
+        return {
+            [ACCORDION_CONTEXT]: {
+                disabled: item.props.disabled,
+                accordion,
+                expanded,
+                key: `accordion__item-${key}`,
+                onClick: this.handleClick.bind(this, key),
+            }
+        }
     };
 
     componentWillReceiveProps(nextProps: AccordionProps) {
@@ -94,11 +114,6 @@ class Accordion extends Component<AccordionProps, AccordionState> {
             const expanded = (this.state.activeItems.indexOf(key) !== -1) && (!item.props.disabled);
 
             return React.cloneElement(item, {
-                disabled: item.props.disabled,
-                accordion,
-                expanded,
-                key: `accordion__item-${key}`,
-                onClick: this.handleClick.bind(this, key),
             });
         });
     }
